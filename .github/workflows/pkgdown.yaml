@@ -53,3 +53,10 @@ jobs:
           clean: false
           branch: gh-pages
           folder: docs
+          # actions/checkout's `token:` (LENGUA_PAT, above) persists as this
+          # job's git credentials for every subsequent github.com request -
+          # including this push. LENGUA_PAT only grants read access to
+          # jprybylski/lengua, not write access to this repo, so it must be
+          # overridden here with the default token (which has contents:write
+          # on THIS repo via the job's `permissions:` block).
+          token: ${{ github.token }}
