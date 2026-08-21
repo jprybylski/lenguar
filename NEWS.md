@@ -1,6 +1,6 @@
 # lenguar
 
-# lenguar (development version)
+# lenguar 0.2.0
 
 ## Breaking changes
 
