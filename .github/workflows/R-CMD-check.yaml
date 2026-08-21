@@ -19,12 +19,15 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # extendr compiles lengua-core from source on every run, so the
-          # matrix is deliberately narrow (macOS + Linux, release R only) -
-          # Windows needs a separate MSVC/rustup toolchain dance this
-          # package doesn't set up yet.
-          - {os: macos-latest,  r: 'release'}
-          - {os: ubuntu-latest, r: 'release'}
+          - {os: macos-latest,   r: 'release'}
+          - {os: ubuntu-latest,  r: 'release'}
+          # R for Windows links compiled code with Rtools' MinGW toolchain,
+          # not MSVC, so the extendr crate must build for the GNU-ABI target
+          # (rextendr's own generated src/Makevars.win.in computes exactly
+          # this target: TARGET = ...-pc-windows-gnu). r-lib/actions/setup-r
+          # installs Rtools and puts its gcc on PATH automatically on
+          # windows-latest, which is what makes that target linkable here.
+          - {os: windows-latest, r: 'release', rust_target: 'x86_64-pc-windows-gnu'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -43,6 +46,8 @@ jobs:
           token: ${{ secrets.LENGUA_PAT || github.token }}
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.config.rust_target }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 
