@@ -4,7 +4,7 @@
 \alias{lq_get}
 \title{Render a template}
 \usage{
-lq_get(path, name, vars = NULL, raw = FALSE, rev = NULL)
+lq_get(path, name, vars = NULL, raw = FALSE, rev = NULL, source = NULL)
 }
 \arguments{
 \item{path}{Path to the store.}
@@ -20,6 +20,10 @@ lq_get(path, name, vars = NULL, raw = FALSE, rev = NULL)
 \item{rev}{Read the template as it existed at this revision instead of
 the working tree — a tag name (see \code{\link[=lq_tag]{lq_tag()}}), or any revspec lengua
 understands (e.g. \code{"HEAD~1"}, a commit sha).}
+
+\item{source}{Read from this source specifically, bypassing merge
+precedence across sources — the only way to reach a copy shadowed by
+another source. Defaults to the merged view across every source.}
 }
 \value{
 A length-1 character vector: the rendered (or raw) body.

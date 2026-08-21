@@ -4,10 +4,10 @@
 \alias{lq_tag}
 \title{Tag a specific revision of a template}
 \usage{
-lq_tag(path, name, tag, rev = NULL, force = FALSE)
+lq_tag(path, name, tag, rev = NULL, force = FALSE, source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
 
 \item{name}{Template name.}
 
@@ -17,6 +17,9 @@ id — both would be ambiguous as a revision.}
 \item{rev}{Revision to tag instead of the current \code{HEAD}.}
 
 \item{force}{Overwrite the tag if it already exists.}
+
+\item{source}{Which source to target. Required if the library has more
+than one source.}
 }
 \value{
 Invisibly, a \code{lenguar_tag_result} (has \verb{$name}, \verb{$tag}, \verb{$commit}).

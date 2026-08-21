@@ -4,12 +4,15 @@
 \alias{lq_log}
 \title{Show a template's commit history}
 \usage{
-lq_log(path, name)
+lq_log(path, name, source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
 
 \item{name}{Template name.}
+
+\item{source}{Which source to read. Required if the library has more
+than one source.}
 }
 \value{
 A \code{lenguar_log} data frame with \code{commit} and \code{message} columns,

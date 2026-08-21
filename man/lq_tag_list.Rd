@@ -4,12 +4,15 @@
 \alias{lq_tag_list}
 \title{List every tag on a template}
 \usage{
-lq_tag_list(path, name)
+lq_tag_list(path, name, source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
 
 \item{name}{Template name.}
+
+\item{source}{Which source to read. Required if the library has more
+than one source.}
 }
 \value{
 A \code{lenguar_tags} data frame with \code{tag} and \code{commit} columns.
