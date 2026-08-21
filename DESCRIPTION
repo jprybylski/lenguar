@@ -2,7 +2,7 @@ Package: lenguar
 Title: Templated Text Library Bindings for lengua
 Version: 0.1.0
 Authors@R: 
-    person("Justin", "Prybylski", , "jprybylski@gmail.com", role = c("aut", "cre"))
+    person("John", "Prybylski", , "jprybylski@gmail.com", role = c("aut", "cre"))
 Description: R bindings (via extendr) to lengua, a git-backed library for
     templated text and snippets with Jinja-style rendering and YAML
     frontmatter tagging.
