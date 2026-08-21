@@ -108,3 +108,15 @@ print.lenguar_tags <- function(x, ...) {
   cli::cli_text("{.strong lengua tag list}: {nrow(x)} tag{?s}")
   NextMethod()
 }
+
+new_lq_skills_result <- function(directory, created) {
+  structure(list(directory = directory, created = created), class = "lenguar_skills_result")
+}
+
+#' @export
+print.lenguar_skills_result <- function(x, ...) {
+  cli::cli_text(
+    "{.strong lengua skills}: wrote {length(x$created)} skill file{?s} to {.path {x$directory}}"
+  )
+  invisible(x)
+}
