@@ -19,8 +19,13 @@ VENDOR_DIR = $(CURDIR)/vendor
 # CRAN note: Cargo and Rustc versions are reported during
 # configure via tools/msrv.R.
 #
-# If a vendor directory exists, it is used for offline compilation. Otherwise if
-# vendor.tar.xz exists, it is unzipped and used for offline compilation.
+# MACOSX_DEPLOYMENT_TARGET pins the target OS version for crates that compile
+# their own C/asm (e.g. aws-lc-sys, pulled in via gix's rustls-backed HTTPS
+# clone support) - without it their build scripts default to the *installed*
+# SDK version, which can be newer than what R's own link step targets and
+# trips "was built for newer macOS version than being linked" (a hard error
+# under R CMD check's default error-on: warning). Harmless no-op on
+# Linux/Windows.
 $(STATLIB):
 
 	if [ -d ./vendor ]; then \
@@ -36,10 +41,12 @@ $(STATLIB):
 
 	export CARGO_HOME=$(CARGOTMP) && \
 	export PATH="$(PATH):$(HOME)/.cargo/bin" && \
+	export MACOSX_DEPLOYMENT_TARGET=11.0 && \
 	@PANIC_EXPORTS@RUSTFLAGS="$(RUSTFLAGS) --print=native-static-libs" cargo build @CRAN_FLAGS@ --lib @PROFILE@ --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR) @TARGET@
 
 	export CARGO_HOME=$(CARGOTMP) && \
 	export PATH="$(PATH):$(HOME)/.cargo/bin" && \
+	export MACOSX_DEPLOYMENT_TARGET=11.0 && \
 	cargo run @CRAN_FLAGS@ --bin document --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR) @TARGET@
 
 	# Always clean up CARGOTMP

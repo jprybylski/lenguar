@@ -6,8 +6,9 @@
 ^LICENSE\.md$
 
 # The lengua submodule brings its own repo/CI/doc scaffolding along, none of
-# which belongs in an R source package - only its `crates/` are needed to
-# compile the extendr bindings.
+# which belongs in an R source package - only lengua-core's own sources are
+# needed to compile the extendr bindings, plus the workspace-level
+# Cargo.toml/Cargo.lock for its version.workspace etc. field inheritance.
 ^src/rust/lengua/\.git$
 ^src/rust/lengua/\.claude$
 ^src/rust/lengua/\.github$
@@ -21,7 +22,16 @@
 ^src/rust/lengua/VERSION$
 ^src/rust/lengua/justfile$
 ^src/rust/lengua/Templated Language Library CLI Tools Research\.md$
+# crates/lengua-cli: the standalone `lengua` binary, listed as a workspace
+# member in lengua/Cargo.toml but never a dependency of lenguar's own
+# rust/Cargo.toml - confirmed by a scratch build from a tarball with this
+# directory removed entirely that Cargo neither needs nor touches it.
+^src/rust/lengua/crates/lengua-cli$
 ^\.github$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^VERSION$
+# changelog.md: scratch file sync-release-metadata.R writes just before
+# R CMD build runs in the same release.yaml job; not meant to ship.
+^changelog\.md$
