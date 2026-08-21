@@ -59,7 +59,10 @@ separate versioning mechanism, it's just git commits (see [History](#history) be
 
 `lq_get()` substitutes `{{ variable }}` placeholders
 ([minijinja](https://github.com/mitsuhiko/minijinja)/Jinja2 syntax) using the named character
-vector passed as `vars`:
+vector passed as `vars`. See lengua-core's
+[templating guide](https://docs.rs/lengua-core/latest/lengua_core/template/) for the full
+syntax lenguar inherits unchanged (filters, conditionals, loops, arithmetic, escaping) — lenguar
+doesn't add or restrict anything here, it's the same `render()` call underneath.
 
 ```{r}
 lq_get(store, "letters/thank-you.md", vars = c(name = "Ada", reason = "your thoughtful review"))
