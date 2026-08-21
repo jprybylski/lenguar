@@ -1,6 +1,6 @@
 # lenguar
 
-# lenguar 0.1.0
+# lenguar (development version)
 
 ## Breaking changes
 
@@ -31,6 +31,8 @@
   `source =`.
 * `lq_init()` gains a `name` argument to name the library's first source
   (defaults to `"local"` when starting empty).
+
+# lenguar 0.1.0
 
 ## New features
 
