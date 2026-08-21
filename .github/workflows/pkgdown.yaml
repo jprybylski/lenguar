@@ -23,9 +23,13 @@ jobs:
     permissions:
       contents: write
     steps:
+      # See the comment on the same step in R-CMD-check.yaml: jprybylski/lengua
+      # is a private repo, so cloning it as a submodule needs the LENGUA_PAT
+      # secret (a fine-grained PAT with read-only Contents access to that repo).
       - uses: actions/checkout@v6
         with:
           submodules: true
+          token: ${{ secrets.LENGUA_PAT || github.token }}
 
       - uses: dtolnay/rust-toolchain@stable
 

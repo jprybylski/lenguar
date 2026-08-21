@@ -31,9 +31,16 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
+      # jprybylski/lengua is a private repo, so the default GITHUB_TOKEN
+      # (scoped to this repo only) can't clone it as a submodule. A
+      # fine-grained PAT with read-only "Contents" access to jprybylski/lengua,
+      # stored as the LENGUA_PAT repo secret, is required for this checkout
+      # to succeed - falls back to the default token (which will fail on the
+      # submodule step) if that secret isn't set.
       - uses: actions/checkout@v6
         with:
           submodules: true
+          token: ${{ secrets.LENGUA_PAT || github.token }}
 
       - uses: dtolnay/rust-toolchain@stable
 
