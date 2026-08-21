@@ -21,7 +21,9 @@ lq_add(
 \code{"letters/thank-you.md"}.}
 
 \item{body}{The template body, using \code{{{ variable }}} interpolation
-(\href{https://github.com/mitsuhiko/minijinja}{minijinja} / Jinja2 syntax).}
+(\href{https://github.com/mitsuhiko/minijinja}{minijinja} / Jinja2 syntax). See
+lengua-core's \href{https://docs.rs/lengua-core/latest/lengua_core/template/}{templating guide}
+for the full supported syntax (filters, conditionals, loops, escaping).}
 
 \item{title}{Optional frontmatter title.}
 

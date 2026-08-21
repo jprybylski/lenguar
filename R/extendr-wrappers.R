@@ -65,7 +65,7 @@ rs_tag_list <- function(path, source, name) .Call(wrap__rs_tag_list, path, sourc
 rs_tag_rm <- function(path, source, name, tag) .Call(wrap__rs_tag_rm, path, source, name, tag)
 
 #' Export lengua's bundled coding-agent skill files (`SKILL.md`) into
-#' `directory`. Doesn't touch a library -- no `path`/`source` involved.
+#' `directory`. Doesn't touch a library — no `path`/`source` involved.
 #' Returns a `directory`/`created` list.
 #' @noRd
 rs_export_skills <- function(directory, force) .Call(wrap__rs_export_skills, directory, force)
