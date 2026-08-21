@@ -1,6 +1,6 @@
 # lenguar
 
-# lenguar (development version)
+# lenguar 0.1.0
 
 ## New features
 
