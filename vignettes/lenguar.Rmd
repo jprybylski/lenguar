@@ -94,6 +94,58 @@ lq_log(store, "letters/thank-you.md")
 lq_diff(store, "letters/thank-you.md")
 ```
 
+## Tagging revisions {#tagging}
+
+`lq_tag()` points a named tag at a specific revision of a template — the current one, or (via
+`rev`) a prior one, which is how you *retroactively* tag a revision after the fact:
+
+```{r}
+lq_add(store, "letter.md", "We had so much fun.", message = "past tense")
+lq_add(store, "letter.md", "We will have so much fun.", message = "future tense")
+
+lq_tag(store, "letter.md", "tense-future")
+lq_tag(store, "letter.md", "tense-past", rev = "HEAD~1")
+
+lq_tag_list(store, "letter.md")
+```
+
+These are lenguar's own tags (`refs/lengua/tags/<template>/<tag>`), not git tags — they're
+scoped per template, so the same tag name can independently exist on several templates. A tag
+name works anywhere `lq_get()`'s `rev` or `lq_diff()`'s `from`/`to` accept a revision:
+
+```{r}
+lq_get(store, "letter.md", rev = "tense-past")
+
+lq_diff(store, "letter.md", from = "tense-past", to = "tense-future")
+```
+
+## Consuming an existing library
+
+Most of the time you're not building a template library from scratch — you're using one a team
+already maintains. `lq_init()`'s `from_dir`/`from_repo` arguments adopt an existing store
+instead of starting empty, mirroring the `lengua` CLI's `init --from-dir`/`--from-repo`.
+`from_dir` (and `from_repo` when it names a local path) copies the source on the filesystem,
+preserving its full history and tags:
+
+```{r}
+copy <- withr::local_tempdir()
+lq_init(copy, from_dir = store)
+
+lq_log(copy, "letter.md")
+lq_tag_list(copy, "letter.md")
+```
+
+`from_repo` against a real remote host clones over the network instead:
+
+```r
+lq_init(store, from_repo = "acme-org/team-templates")
+lq_init(store, from_repo = "acme-org/team-templates/letters@v2")
+```
+
+See [lengua's own docs on consuming an existing
+library](https://jprybylski.github.io/lengua/consuming.html) for the full walkthrough, including
+GitHub Enterprise hosts and importing a subdirectory.
+
 ## Error handling
 
 Every lenguar function that talks to the underlying store raises a classed condition on
@@ -111,7 +163,7 @@ tryCatch(
 
 ## Where to next
 
-See `?lq_add`, `?lq_get`, `?lq_list`, `?lq_search`, `?lq_log`, and `?lq_diff` for full
-per-function reference, and [lengua's own
+See `?lq_add`, `?lq_get`, `?lq_list`, `?lq_search`, `?lq_log`, `?lq_diff`, `?lq_tag`,
+`?lq_tag_list`, `?lq_tag_rm`, and `?lq_init` for full per-function reference, and [lengua's own
 docs](https://jprybylski.github.io/lengua/) for the template syntax, frontmatter model, and
 storage design that lenguar is a thin FFI layer over.

@@ -88,3 +88,65 @@ test_that("log and diff track history", {
   expect_true("First version." %in% diff$line[diff$tag == "delete"])
   expect_true("Second version." %in% diff$line[diff$tag == "insert"])
 })
+
+test_that("tag add/list/rm roundtrip, including a retroactive tag", {
+  store <- withr::local_tempdir()
+  lq_init(store)
+  lq_add(store, "letter.md", "We had so much fun.", message = "past tense")
+  lq_add(store, "letter.md", "We will have so much fun.", message = "future tense")
+
+  future <- lq_tag(store, "letter.md", "tense-future")
+  expect_s3_class(future, "lenguar_tag_result")
+  expect_equal(future$tag, "tense-future")
+
+  past <- lq_tag(store, "letter.md", "tense-past", rev = "HEAD~1")
+  expect_equal(past$tag, "tense-past")
+
+  tags <- lq_tag_list(store, "letter.md")
+  expect_s3_class(tags, "lenguar_tags")
+  expect_setequal(tags$tag, c("tense-future", "tense-past"))
+
+  expect_equal(lq_get(store, "letter.md", rev = "tense-past"), "We had so much fun.")
+  expect_equal(lq_get(store, "letter.md", rev = "tense-future"), "We will have so much fun.")
+
+  lq_tag_rm(store, "letter.md", "tense-past")
+  expect_false("tense-past" %in% lq_tag_list(store, "letter.md")$tag)
+})
+
+test_that("tag add refuses to overwrite without force", {
+  store <- withr::local_tempdir()
+  lq_init(store)
+  lq_add(store, "letter.md", "v1")
+
+  lq_tag(store, "letter.md", "final")
+  expect_error(lq_tag(store, "letter.md", "final"), class = "lenguar_store_error")
+  expect_no_error(lq_tag(store, "letter.md", "final", force = TRUE))
+})
+
+test_that("init with from_dir adopts an existing store's history and tags", {
+  # `from_dir` is a local filesystem copy in lengua-core (not a `gix`
+  # network-transport clone), specifically so this works under R: gix's
+  # transport-based clone shells out to `git-upload-pack` for local sources
+  # too, which fails under R's SIGPIPE = SIG_IGN startup disposition
+  # ("ignoring SIGPIPE signal") - see lengua-core's `source.rs` module docs.
+  source <- withr::local_tempdir()
+  lq_init(source)
+  lq_add(source, "letter.md", "v1", message = "v1")
+  lq_add(source, "letter.md", "v2", message = "v2")
+  lq_tag(source, "letter.md", "final")
+
+  dest <- file.path(withr::local_tempdir(), "adopted")
+  result <- lq_init(dest, from_dir = source)
+  expect_s3_class(result, "lenguar_init_result")
+
+  expect_equal(nrow(lq_log(dest, "letter.md")), 2)
+  expect_equal(lq_tag_list(dest, "letter.md")$tag, "final")
+})
+
+test_that("init rejects specifying both from_dir and from_repo", {
+  store <- withr::local_tempdir()
+  expect_error(
+    lq_init(store, from_dir = "somewhere", from_repo = "acme/templates"),
+    class = "lenguar_input_error"
+  )
+})

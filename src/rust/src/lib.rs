@@ -32,11 +32,30 @@ fn build_meta(title: Nullable<String>, fields: &Robj) -> extendr_api::Result<Tem
     Ok(meta)
 }
 
-/// Initialize a new template-library git repo at `path`.
+/// Initialize a new template-library git repo at `path`, or adopt an
+/// existing one via `from_dir`/`from_repo`.
 /// @noRd
 #[extendr]
-fn rs_init(path: &str) -> extendr_api::Result<()> {
-    Store::init(path).map_err(|e| e.to_string())?;
+fn rs_init(
+    path: &str,
+    from_dir: Nullable<String>,
+    from_repo: Nullable<String>,
+    git_ref: Nullable<String>,
+    subdir: Nullable<String>,
+    force: bool,
+) -> extendr_api::Result<()> {
+    let from_dir = from_dir.into_option();
+    let from_repo = from_repo.into_option();
+    let git_ref = git_ref.into_option();
+    let subdir = subdir.into_option();
+    if let Some(dir) = from_dir {
+        Store::init_from_dir(path, &dir, subdir.as_deref(), force).map_err(|e| e.to_string())?;
+    } else if let Some(url) = from_repo {
+        Store::init_from_repo(path, &url, git_ref.as_deref(), subdir.as_deref(), force)
+            .map_err(|e| e.to_string())?;
+    } else {
+        Store::init(path).map_err(|e| e.to_string())?;
+    }
     Ok(())
 }
 
@@ -60,11 +79,23 @@ fn rs_add(
 }
 
 /// Render a template with variables substituted, or return its raw body.
+/// `rev`, if given, reads the template as it existed at that revision (a
+/// lengua tag name, or any revspec gix understands) instead of the working
+/// tree.
 /// @noRd
 #[extendr]
-fn rs_get(path: &str, name: &str, vars: Robj, raw: bool) -> extendr_api::Result<String> {
+fn rs_get(
+    path: &str,
+    name: &str,
+    vars: Robj,
+    raw: bool,
+    rev: Nullable<String>,
+) -> extendr_api::Result<String> {
     let store = Store::open(path).map_err(|e| e.to_string())?;
-    let entry = store.get(name).map_err(|e| e.to_string())?;
+    let entry = match rev.into_option() {
+        Some(rev) => store.get_at_revision(name, &rev).map_err(|e| e.to_string())?,
+        None => store.get(name).map_err(|e| e.to_string())?,
+    };
     if raw {
         return Ok(entry.body);
     }
@@ -151,6 +182,47 @@ fn rs_diff(path: &str, name: &str, from: &str, to: &str) -> extendr_api::Result<
     Ok(data_frame!(tag = tags, line = lines))
 }
 
+/// Point a lengua tag at `name`'s current revision (or `rev`). Returns the
+/// tagged commit sha.
+/// @noRd
+#[extendr]
+fn rs_tag(
+    path: &str,
+    name: &str,
+    tag: &str,
+    rev: Nullable<String>,
+    force: bool,
+) -> extendr_api::Result<String> {
+    let store = Store::open(path).map_err(|e| e.to_string())?;
+    let entry = store
+        .tag_create(name, tag, rev.into_option().as_deref(), force)
+        .map_err(|e| e.to_string())?;
+    Ok(entry.commit)
+}
+
+/// List every lengua tag on a template as a `tag`/`commit` data frame.
+/// @noRd
+#[extendr]
+fn rs_tag_list(path: &str, name: &str) -> extendr_api::Result<Robj> {
+    let store = Store::open(path).map_err(|e| e.to_string())?;
+    let entries = store.tag_list(name).map_err(|e| e.to_string())?;
+    let tags: Vec<Rstr> = entries.iter().map(|e| Rstr::from(e.tag.clone())).collect();
+    let commits: Vec<Rstr> = entries
+        .iter()
+        .map(|e| Rstr::from(e.commit.clone()))
+        .collect();
+    Ok(data_frame!(tag = tags, commit = commits))
+}
+
+/// Remove a lengua tag from a template.
+/// @noRd
+#[extendr]
+fn rs_tag_rm(path: &str, name: &str, tag: &str) -> extendr_api::Result<()> {
+    let store = Store::open(path).map_err(|e| e.to_string())?;
+    store.tag_remove(name, tag).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 extendr_module! {
     mod lenguar;
     fn rs_init;
@@ -160,4 +232,7 @@ extendr_module! {
     fn rs_search;
     fn rs_log;
     fn rs_diff;
+    fn rs_tag;
+    fn rs_tag_list;
+    fn rs_tag_rm;
 }

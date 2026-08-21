@@ -4,20 +4,74 @@
 \alias{lq_init}
 \title{Initialize a new lengua template-library store}
 \usage{
-lq_init(path)
+lq_init(
+  path,
+  from_dir = NULL,
+  from_repo = NULL,
+  ref = NULL,
+  subdir = NULL,
+  force = FALSE
+)
 }
 \arguments{
 \item{path}{Directory to initialize. Must not already contain a \code{.git}
-directory.}
+directory (unless importing with \code{subdir} and \code{force = TRUE}).}
+
+\item{from_dir}{Use a local directory as the store source instead of
+starting empty. Full history and every tag are preserved. Mutually
+exclusive with \code{from_repo}.}
+
+\item{from_repo}{Clone a git repo as the store source: a full URL, or
+\code{"[host/]owner/repo[/subdir][@ref]"} shorthand (host defaults to
+\code{github.com} — give one explicitly for GitHub Enterprise). Mutually
+exclusive with \code{from_dir}.}
+
+\item{ref}{Branch or tag to check out (not a commit id). Only valid with
+\code{from_repo}; overrides any \verb{@ref} embedded in its shorthand. See
+Details for a residual limitation when combined with a local
+\code{from_repo} path.}
+
+\item{subdir}{Import only this subdirectory of the resolved source as the
+new store. Overrides any subdirectory embedded in \code{from_repo}'s
+shorthand. Unlike a plain \code{from_dir}/\code{from_repo} adoption, this imports
+the subdirectory's \emph{current} content only — the source's history and
+any tags under it are not preserved (there's no lossless way to extract
+a subdirectory's history without a full \verb{git subtree}-style rewrite).}
+
+\item{force}{With \code{subdir}, allow re-importing into a store that already
+exists, overwriting templates with the same name.}
 }
 \value{
 Invisibly, a \code{lenguar_init_result}.
 }
 \description{
 Creates a git repository at \code{path} with an empty \verb{templates/} directory
-inside it, ready for \code{\link[=lq_add]{lq_add()}}.
+inside it, ready for \code{\link[=lq_add]{lq_add()}} — or, with \code{from_dir}/\code{from_repo}, adopts
+an existing store instead of starting empty.
+}
+\details{
+\code{from_dir} (and \code{from_repo} when it names a local path rather than a
+genuine remote) adopts the source with a plain filesystem copy — real,
+independent history and tags, but no network protocol involved. This
+isn't just an optimization: \code{gix}'s network-transport clone shells out to
+a \code{git-upload-pack} child process even for a local source, and that
+process fails under R's \code{SIGPIPE = SIG_IGN} startup disposition (a
+long-standing R embedding quirk) with "ignoring SIGPIPE signal" — the
+filesystem copy sidesteps that entirely rather than working around it.
+\code{from_repo} against a genuine remote host (\verb{https://}, \verb{ssh://}, ...)
+still goes through \code{gix}'s transport, which is socket-based rather than a
+subprocess and isn't affected. The one remaining edge case: \code{from_repo}
+naming a local path \emph{together with} an explicit \code{ref}/\verb{@ref} still uses
+the transport-based clone (checking out an arbitrary ref after a plain
+copy isn't implemented), so that specific combination could still hit the
+same failure under R — prefer \code{from_dir} for local sources when you don't
+need to select a non-default ref.
 }
 \examples{
 store <- withr::local_tempdir()
 lq_init(store)
+
+# adopting an existing store:
+copy <- withr::local_tempdir()
+lq_init(copy, from_dir = store)
 }

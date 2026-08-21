@@ -5,17 +5,21 @@
 #' @useDynLib lenguar, .registration = TRUE
 NULL
 
-#' Initialize a new template-library git repo at `path`.
+#' Initialize a new template-library git repo at `path`, or adopt an
+#' existing one via `from_dir`/`from_repo`.
 #' @noRd
-rs_init <- function(path) .Call(wrap__rs_init, path)
+rs_init <- function(path, from_dir, from_repo, git_ref, subdir, force) .Call(wrap__rs_init, path, from_dir, from_repo, git_ref, subdir, force)
 
 #' Add or update a template, committing the change. Returns the commit sha.
 #' @noRd
 rs_add <- function(path, name, title, fields, body, message) .Call(wrap__rs_add, path, name, title, fields, body, message)
 
 #' Render a template with variables substituted, or return its raw body.
+#' `rev`, if given, reads the template as it existed at that revision (a
+#' lengua tag name, or any revspec gix understands) instead of the working
+#' tree.
 #' @noRd
-rs_get <- function(path, name, vars, raw) .Call(wrap__rs_get, path, name, vars, raw)
+rs_get <- function(path, name, vars, raw, rev) .Call(wrap__rs_get, path, name, vars, raw, rev)
 
 #' List every template in the store as a `name`/`title` data frame.
 #' @noRd
@@ -32,5 +36,18 @@ rs_log <- function(path, name) .Call(wrap__rs_log, path, name)
 #' Diff a template's content between two revisions as a `tag`/`line` data frame.
 #' @noRd
 rs_diff <- function(path, name, from, to) .Call(wrap__rs_diff, path, name, from, to)
+
+#' Point a lengua tag at `name`'s current revision (or `rev`). Returns the
+#' tagged commit sha.
+#' @noRd
+rs_tag <- function(path, name, tag, rev, force) .Call(wrap__rs_tag, path, name, tag, rev, force)
+
+#' List every lengua tag on a template as a `tag`/`commit` data frame.
+#' @noRd
+rs_tag_list <- function(path, name) .Call(wrap__rs_tag_list, path, name)
+
+#' Remove a lengua tag from a template.
+#' @noRd
+rs_tag_rm <- function(path, name, tag) .Call(wrap__rs_tag_rm, path, name, tag)
 
 # nolint end

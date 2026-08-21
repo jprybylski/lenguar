@@ -4,7 +4,7 @@
 \alias{lq_get}
 \title{Render a template}
 \usage{
-lq_get(path, name, vars = NULL, raw = FALSE)
+lq_get(path, name, vars = NULL, raw = FALSE, rev = NULL)
 }
 \arguments{
 \item{path}{Path to the store.}
@@ -16,6 +16,10 @@ lq_get(path, name, vars = NULL, raw = FALSE)
 
 \item{raw}{If \code{TRUE}, return the unrendered body instead of substituting
 \code{vars}.}
+
+\item{rev}{Read the template as it existed at this revision instead of
+the working tree — a tag name (see \code{\link[=lq_tag]{lq_tag()}}), or any revspec lengua
+understands (e.g. \code{"HEAD~1"}, a commit sha).}
 }
 \value{
 A length-1 character vector: the rendered (or raw) body.

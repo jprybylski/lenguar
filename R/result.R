@@ -47,16 +47,39 @@ new_lq_diff <- function(df) {
 
 #' @export
 print.lenguar_diff <- function(x, ...) {
+  # Color palette mirrors lengua-cli's `output.rs` so both CLIs read as one
+  # brand: green = inserted lines, red = deleted lines. `cli::col_green()`/
+  # `col_red()` already no-op (emit no ANSI codes) when the terminal/NO_COLOR
+  # doesn't support color, so no extra `num_ansi_colors()` gate is needed.
   prefix <- c(equal = "  ", insert = "+ ", delete = "- ")
-  colors <- list(
-    equal = identity,
-    insert = if (cli::num_ansi_colors() > 1) cli::col_green else identity,
-    delete = if (cli::num_ansi_colors() > 1) cli::col_red else identity
-  )
+  color <- list(equal = identity, insert = cli::col_green, delete = cli::col_red)
   for (i in seq_len(nrow(x))) {
     tag <- x$tag[[i]]
     line <- paste0(prefix[[tag]], x$line[[i]])
-    cat(colors[[tag]](line), "\n", sep = "")
+    cli::cat_line(color[[tag]](line))
   }
   invisible(x)
+}
+
+new_lq_tag_result <- function(name, tag, commit) {
+  structure(list(name = name, tag = tag, commit = commit), class = "lenguar_tag_result")
+}
+
+#' @export
+print.lenguar_tag_result <- function(x, ...) {
+  cli::cli_text("{.strong lengua tag}: {x$name} @ {substr(x$commit, 1, 12)} as {.field {x$tag}}")
+  invisible(x)
+}
+
+#' @export
+format.lenguar_tag_result <- function(x, ...) x$commit
+
+new_lq_tags <- function(df) {
+  structure(df, class = c("lenguar_tags", class(df)))
+}
+
+#' @export
+print.lenguar_tags <- function(x, ...) {
+  cli::cli_text("{.strong lengua tag list}: {nrow(x)} tag{?s}")
+  NextMethod()
 }
