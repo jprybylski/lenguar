@@ -4,15 +4,18 @@
 \alias{lq_diff}
 \title{Diff a template between two revisions}
 \usage{
-lq_diff(path, name, from = "HEAD~1", to = "HEAD")
+lq_diff(path, name, from = "HEAD~1", to = "HEAD", source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
 
 \item{name}{Template name.}
 
 \item{from, to}{Revisions to compare (any revspec lengua understands, e.g.
 \code{"HEAD"}, \code{"HEAD~1"}, a commit sha).}
+
+\item{source}{Which source to read. Required if the library has more
+than one source.}
 }
 \value{
 A \code{lenguar_diff} data frame with \code{tag} (\code{"equal"}/\code{"insert"}/\code{"delete"})

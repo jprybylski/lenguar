@@ -5,49 +5,63 @@
 #' @useDynLib lenguar, .registration = TRUE
 NULL
 
-#' Initialize a new template-library git repo at `path`, or adopt an
-#' existing one via `from_dir`/`from_repo`.
+#' Initialize a new lengua template library at `path`, or adopt an existing
+#' store as its first source via `from_dir`/`from_repo`.
 #' @noRd
-rs_init <- function(path, from_dir, from_repo, git_ref, subdir, force) .Call(wrap__rs_init, path, from_dir, from_repo, git_ref, subdir, force)
+rs_init <- function(path, name, from_dir, from_repo, git_ref, subdir, force) .Call(wrap__rs_init, path, name, from_dir, from_repo, git_ref, subdir, force)
+
+#' Add another source to an already-initialized library. Returns a
+#' `source`/`warnings` list (`warnings` a character vector, possibly empty).
+#' @noRd
+rs_fetch <- function(path, name, from_dir, from_repo, git_ref, subdir, force) .Call(wrap__rs_fetch, path, name, from_dir, from_repo, git_ref, subdir, force)
+
+#' Refresh one source (`source`) or every source in the library. Returns a
+#' `source`/`status`/`detail` data frame — never errors on a per-source
+#' failure, so R code can inspect every row and decide what to do; a
+#' genuine fast-forward failure is reported as `status = "error"`.
+#' @noRd
+rs_update <- function(path, source) .Call(wrap__rs_update, path, source)
 
 #' Add or update a template, committing the change. Returns the commit sha.
 #' @noRd
-rs_add <- function(path, name, title, fields, body, message) .Call(wrap__rs_add, path, name, title, fields, body, message)
+rs_add <- function(path, source, name, title, fields, body, message) .Call(wrap__rs_add, path, source, name, title, fields, body, message)
 
 #' Render a template with variables substituted, or return its raw body.
 #' `rev`, if given, reads the template as it existed at that revision (a
 #' lengua tag name, or any revspec gix understands) instead of the working
-#' tree.
+#' tree. `source`, if given, reads that source directly, bypassing merge
+#' precedence across sources.
 #' @noRd
-rs_get <- function(path, name, vars, raw, rev) .Call(wrap__rs_get, path, name, vars, raw, rev)
+rs_get <- function(path, source, name, vars, raw, rev) .Call(wrap__rs_get, path, source, name, vars, raw, rev)
 
-#' List every template in the store as a `name`/`title` data frame.
+#' List every template in the library (merged across sources unless
+#' `source` scopes it to one) as a `name`/`title`/`source` data frame.
 #' @noRd
-rs_list <- function(path) .Call(wrap__rs_list, path)
+rs_list <- function(path, source) .Call(wrap__rs_list, path, source)
 
 #' Filter templates by frontmatter field (AND of all pairs in `fields`).
 #' @noRd
-rs_search <- function(path, fields) .Call(wrap__rs_search, path, fields)
+rs_search <- function(path, source, fields) .Call(wrap__rs_search, path, source, fields)
 
 #' Show the commit history for a template as a `commit`/`message` data frame.
 #' @noRd
-rs_log <- function(path, name) .Call(wrap__rs_log, path, name)
+rs_log <- function(path, source, name) .Call(wrap__rs_log, path, source, name)
 
 #' Diff a template's content between two revisions as a `tag`/`line` data frame.
 #' @noRd
-rs_diff <- function(path, name, from, to) .Call(wrap__rs_diff, path, name, from, to)
+rs_diff <- function(path, source, name, from, to) .Call(wrap__rs_diff, path, source, name, from, to)
 
 #' Point a lengua tag at `name`'s current revision (or `rev`). Returns the
 #' tagged commit sha.
 #' @noRd
-rs_tag <- function(path, name, tag, rev, force) .Call(wrap__rs_tag, path, name, tag, rev, force)
+rs_tag <- function(path, source, name, tag, rev, force) .Call(wrap__rs_tag, path, source, name, tag, rev, force)
 
 #' List every lengua tag on a template as a `tag`/`commit` data frame.
 #' @noRd
-rs_tag_list <- function(path, name) .Call(wrap__rs_tag_list, path, name)
+rs_tag_list <- function(path, source, name) .Call(wrap__rs_tag_list, path, source, name)
 
 #' Remove a lengua tag from a template.
 #' @noRd
-rs_tag_rm <- function(path, name, tag) .Call(wrap__rs_tag_rm, path, name, tag)
+rs_tag_rm <- function(path, source, name, tag) .Call(wrap__rs_tag_rm, path, source, name, tag)
 
 # nolint end

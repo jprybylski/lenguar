@@ -22,15 +22,21 @@ lenguar wraps [lengua](https://github.com/jprybylski/lengua) — a git-backed li
 templated text and snippets — via Rust FFI (extendr), so every function here runs the same
 `lengua-core` engine as the standalone `lengua` CLI, just without a subprocess in between.
 
-## A store is a git repo
+## A library is a `.lengua/` directory of sources
 
-Every lenguar function takes a `path` to a *store*: a directory containing a `templates/`
-folder and its own `.git` history. Create one with `lq_init()`:
+Every lenguar function takes a `path` to a *library*: a directory containing `.lengua/`, which
+holds one or more named *sources* — each its own git repo with a `templates/` folder inside it.
+Create one with `lq_init()`, which sets up the library's first source (named `"local"` by
+default):
 
 ```{r}
 store <- withr::local_tempdir()
 lq_init(store)
 ```
+
+A library only ever needs more than one source if you're pooling templates from elsewhere —
+see [Pooling more than one source](#pooling) below. Everything up to that point works exactly
+as if `path` were still a single plain store.
 
 ## Adding templates
 
@@ -146,6 +152,44 @@ See [lengua's own docs on consuming an existing
 library](https://jprybylski.github.io/lengua/consuming.html) for the full walkthrough, including
 GitHub Enterprise hosts and importing a subdirectory.
 
+### Pooling more than one source {#pooling}
+
+`lq_init()` adopts a store as your library's *first* source. To add a second (or third, ...)
+without starting a new library, use `lq_fetch()` — same adoption arguments, appended instead of
+replacing:
+
+```{r}
+team <- withr::local_tempdir()
+lq_init(team)
+lq_add(team, "letters/thank-you.md", "Dear {{ name }}, thank you!", title = "Thank You")
+
+pooled <- withr::local_tempdir()
+lq_init(pooled)
+lq_fetch(pooled, from_dir = team, name = "team")
+```
+
+The new source becomes the highest-precedence one: `lq_get()`/`lq_list()`/`lq_search()` (with
+no `source`) merge every source together, and if two sources define the same template name,
+**the most recently fetched one wins** — `lq_fetch()`'s result carries any collision as
+`$warnings`, and `lq_list()`/`lq_search()`'s `source` column always shows which source a result
+actually came from. Pass `source` to `lq_get()`/`lq_list()`/`lq_search()` to bypass the merge
+and read one source directly — including one that's currently shadowed — and to
+`lq_add()`/`lq_log()`/`lq_diff()`/`lq_tag()`/`lq_tag_list()`/`lq_tag_rm()` once a library has
+more than one source, since there's no longer a single default source to target.
+
+`lq_update()` refreshes one source (`source = "team"`) or every source from its recorded
+origin, fast-forward only — the same semantics as `git pull --ff-only`, never a hard reset. A
+source with nothing to update from (the library's own `local` source, or one imported with
+`subdir`) reports `status = "not-updatable"`, not an error:
+
+```{r}
+lq_update(pooled)
+```
+
+A library built entirely from `lq_fetch()`ed sources, with no `local` source of its own, is a
+completely normal way to use lenguar — consuming shared templates never requires calling
+`lq_init()`/`lq_add()` without adoption arguments at all.
+
 ## Error handling
 
 Every lenguar function that talks to the underlying store raises a classed condition on
@@ -164,6 +208,6 @@ tryCatch(
 ## Where to next
 
 See `?lq_add`, `?lq_get`, `?lq_list`, `?lq_search`, `?lq_log`, `?lq_diff`, `?lq_tag`,
-`?lq_tag_list`, `?lq_tag_rm`, and `?lq_init` for full per-function reference, and [lengua's own
-docs](https://jprybylski.github.io/lengua/) for the template syntax, frontmatter model, and
-storage design that lenguar is a thin FFI layer over.
+`?lq_tag_list`, `?lq_tag_rm`, `?lq_init`, `?lq_fetch`, and `?lq_update` for full per-function
+reference, and [lengua's own docs](https://jprybylski.github.io/lengua/) for the template
+syntax, frontmatter model, and storage design that lenguar is a thin FFI layer over.

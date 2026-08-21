@@ -4,14 +4,17 @@
 \alias{lq_tag_rm}
 \title{Remove a tag from a template}
 \usage{
-lq_tag_rm(path, name, tag)
+lq_tag_rm(path, name, tag, source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
 
 \item{name}{Template name.}
 
 \item{tag}{Tag name.}
+
+\item{source}{Which source to target. Required if the library has more
+than one source.}
 }
 \value{
 Invisibly, \code{NULL}.

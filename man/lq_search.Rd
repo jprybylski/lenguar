@@ -4,16 +4,19 @@
 \alias{lq_search}
 \title{Search templates by frontmatter field}
 \usage{
-lq_search(path, fields)
+lq_search(path, fields, source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
 
 \item{fields}{Named character vector of frontmatter fields to match;
 results must match every field (AND).}
+
+\item{source}{Search only this source's templates.}
 }
 \value{
-A \code{lenguar_templates} data frame with \code{name} and \code{title} columns.
+A \code{lenguar_templates} data frame with \code{name}, \code{title}, and
+\code{source} columns.
 }
 \description{
 Search templates by frontmatter field

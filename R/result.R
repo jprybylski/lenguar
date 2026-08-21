@@ -1,11 +1,36 @@
-new_lq_init_result <- function(path) {
-  structure(list(path = path), class = "lenguar_init_result")
+new_lq_init_result <- function(path, source) {
+  structure(list(path = path, source = source), class = "lenguar_init_result")
 }
 
 #' @export
 print.lenguar_init_result <- function(x, ...) {
-  cli::cli_text("{.strong lengua init}: created a store at {.path {x$path}}")
+  cli::cli_text(
+    "{.strong lengua init}: created a library at {.path {x$path}} (source {.field {x$source}})"
+  )
   invisible(x)
+}
+
+new_lq_fetch_result <- function(source, warnings) {
+  structure(list(source = source, warnings = warnings), class = "lenguar_fetch_result")
+}
+
+#' @export
+print.lenguar_fetch_result <- function(x, ...) {
+  cli::cli_text("{.strong lengua fetch}: added source {.field {x$source}}")
+  for (w in x$warnings) {
+    cli::cli_alert_warning(w)
+  }
+  invisible(x)
+}
+
+new_lq_update <- function(df) {
+  structure(df, class = c("lenguar_update", class(df)))
+}
+
+#' @export
+print.lenguar_update <- function(x, ...) {
+  cli::cli_text("{.strong lengua update}: {nrow(x)} source{?s}")
+  NextMethod()
 }
 
 new_lq_add_result <- function(name, commit) {

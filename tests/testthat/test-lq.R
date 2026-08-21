@@ -1,9 +1,18 @@
-test_that("init creates a store", {
+test_that("init creates a library", {
   store <- withr::local_tempdir()
   result <- lq_init(store)
   expect_s3_class(result, "lenguar_init_result")
-  expect_true(dir.exists(file.path(store, ".git")))
-  expect_true(dir.exists(file.path(store, "templates")))
+  expect_equal(result$source, "local")
+  expect_true(file.exists(file.path(store, ".lengua", "sources.toml")))
+  expect_true(dir.exists(file.path(store, ".lengua", "local", ".git")))
+  expect_true(dir.exists(file.path(store, ".lengua", "local", "templates")))
+})
+
+test_that("init with a custom name uses it for the first source", {
+  store <- withr::local_tempdir()
+  result <- lq_init(store, name = "mine")
+  expect_equal(result$source, "mine")
+  expect_true(dir.exists(file.path(store, ".lengua", "mine", ".git")))
 })
 
 test_that("init rejects an already-initialized store", {
@@ -149,4 +158,67 @@ test_that("init rejects specifying both from_dir and from_repo", {
     lq_init(store, from_dir = "somewhere", from_repo = "acme/templates"),
     class = "lenguar_input_error"
   )
+})
+
+test_that("fetch adds a second source, add/log/diff/tag then require --source", {
+  store <- withr::local_tempdir()
+  lq_init(store)
+  lq_add(store, "a.md", "local body")
+
+  other <- withr::local_tempdir()
+  lq_init(other)
+  lq_add(other, "b.md", "other body")
+
+  fetched <- lq_fetch(store, from_dir = other, name = "other")
+  expect_s3_class(fetched, "lenguar_fetch_result")
+  expect_equal(fetched$source, "other")
+  expect_equal(fetched$warnings, character())
+
+  expect_error(lq_add(store, "c.md", "body"), class = "lenguar_store_error")
+  lq_add(store, "c.md", "body", source = "local")
+
+  expect_error(lq_log(store, "a.md"), class = "lenguar_store_error")
+  expect_equal(nrow(lq_log(store, "a.md", source = "local")), 1)
+})
+
+test_that("fetching a name collision reports it and last-fetched wins", {
+  store <- withr::local_tempdir()
+  lq_init(store)
+  lq_add(store, "shared.md", "local body", title = "Local")
+
+  other <- withr::local_tempdir()
+  lq_init(other)
+  lq_add(other, "shared.md", "other body", title = "Other")
+
+  fetched <- lq_fetch(store, from_dir = other, name = "other")
+  expect_length(fetched$warnings, 1)
+  expect_match(fetched$warnings, "shared\\.md")
+
+  all <- lq_list(store)
+  row <- all[all$name == "shared.md", ]
+  expect_equal(row$source, "other")
+  expect_equal(row$title, "Other")
+
+  local_row <- lq_get(store, "shared.md", source = "local")
+  expect_equal(local_row, "local body")
+})
+
+test_that("update fast-forwards a fetched source and reports local as not-updatable", {
+  store <- withr::local_tempdir()
+  lq_init(store)
+
+  other <- withr::local_tempdir()
+  lq_init(other)
+  lq_add(other, "a.md", "v1")
+  lq_fetch(store, from_dir = other, name = "other")
+
+  lq_add(other, "b.md", "v2")
+
+  result <- lq_update(store)
+  expect_s3_class(result, "lenguar_update")
+  expect_setequal(result$source, c("local", "other"))
+  expect_equal(result$status[result$source == "local"], "not-updatable")
+  expect_equal(result$status[result$source == "other"], "fast-forwarded")
+
+  expect_equal(lq_get(store, "b.md", source = "other"), "v2")
 })

@@ -2,19 +2,23 @@
 % Please edit documentation in R/lq.R
 \name{lq_list}
 \alias{lq_list}
-\title{List every template in a store}
+\title{List every template in a library}
 \usage{
-lq_list(path)
+lq_list(path, source = NULL)
 }
 \arguments{
-\item{path}{Path to the store.}
+\item{path}{Path to the library.}
+
+\item{source}{List only this source's templates.}
 }
 \value{
-A \code{lenguar_templates} data frame with \code{name} and \code{title} columns,
-sorted by name.
+A \code{lenguar_templates} data frame with \code{name}, \code{title}, and
+\code{source} columns, sorted by name.
 }
 \description{
-List every template in a store
+Merges every source's templates unless \code{source} scopes it to one. If two
+sources define the same name, the most recently \code{\link[=lq_fetch]{lq_fetch()}}ed source
+wins — see \code{\link[=lq_init]{lq_init()}}'s multi-source details.
 }
 \examples{
 store <- withr::local_tempdir()

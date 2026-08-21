@@ -10,13 +10,15 @@ lq_add(
   body,
   title = NULL,
   fields = NULL,
-  message = "add/update template"
+  message = "add/update template",
+  source = NULL
 )
 }
 \arguments{
-\item{path}{Path to the store (as created by \code{\link[=lq_init]{lq_init()}}).}
+\item{path}{Path to the library (as created by \code{\link[=lq_init]{lq_init()}}).}
 
-\item{name}{Relative path/id under \verb{templates/}, e.g. \code{"letters/thank-you.md"}.}
+\item{name}{Relative path/id under the source's \verb{templates/} dir, e.g.
+\code{"letters/thank-you.md"}.}
 
 \item{body}{The template body, using \code{{{ variable }}} interpolation
 (\href{https://github.com/mitsuhiko/minijinja}{minijinja} / Jinja2 syntax).}
@@ -27,13 +29,16 @@ lq_add(
 fields, e.g. \code{c(tone = "formal")}.}
 
 \item{message}{Commit message.}
+
+\item{source}{Which source to write to. Required if the library has more
+than one source.}
 }
 \value{
 Invisibly, a \code{lenguar_add_result} (has \verb{$name} and \verb{$commit}).
 }
 \description{
-Writes \code{body} (with optional YAML frontmatter fields) to \code{name} under
-\code{path}'s \verb{templates/} directory and commits the change. lengua is
+Writes \code{body} (with optional YAML frontmatter fields) to \code{name} under a
+source's \verb{templates/} directory and commits the change. lengua is
 git-backed, so every call to \code{lq_add()} for the same \code{name} is a new
 point in that template's history (see \code{\link[=lq_log]{lq_log()}} / \code{\link[=lq_diff]{lq_diff()}}).
 }

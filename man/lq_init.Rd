@@ -2,10 +2,11 @@
 % Please edit documentation in R/lq.R
 \name{lq_init}
 \alias{lq_init}
-\title{Initialize a new lengua template-library store}
+\title{Initialize a new lengua template library}
 \usage{
 lq_init(
   path,
+  name = NULL,
   from_dir = NULL,
   from_repo = NULL,
   ref = NULL,
@@ -14,8 +15,12 @@ lq_init(
 )
 }
 \arguments{
-\item{path}{Directory to initialize. Must not already contain a \code{.git}
-directory (unless importing with \code{subdir} and \code{force = TRUE}).}
+\item{path}{Directory to initialize. Must not already contain a
+\verb{.lengua/} directory (unless importing with \code{subdir} and \code{force = TRUE}).}
+
+\item{name}{Name for the first source. Defaults to \code{"local"} when
+starting empty, or is derived from \code{from_dir}/\code{from_repo} when adopting
+one.}
 
 \item{from_dir}{Use a local directory as the store source instead of
 starting empty. Full history and every tag are preserved. Mutually
@@ -32,22 +37,25 @@ Details for a residual limitation when combined with a local
 \code{from_repo} path.}
 
 \item{subdir}{Import only this subdirectory of the resolved source as the
-new store. Overrides any subdirectory embedded in \code{from_repo}'s
+new source. Overrides any subdirectory embedded in \code{from_repo}'s
 shorthand. Unlike a plain \code{from_dir}/\code{from_repo} adoption, this imports
 the subdirectory's \emph{current} content only — the source's history and
 any tags under it are not preserved (there's no lossless way to extract
-a subdirectory's history without a full \verb{git subtree}-style rewrite).}
+a subdirectory's history without a full \verb{git subtree}-style rewrite) —
+and it can't later be refreshed with \code{\link[=lq_update]{lq_update()}}.}
 
-\item{force}{With \code{subdir}, allow re-importing into a store that already
+\item{force}{With \code{subdir}, allow re-importing into a source that already
 exists, overwriting templates with the same name.}
 }
 \value{
 Invisibly, a \code{lenguar_init_result}.
 }
 \description{
-Creates a git repository at \code{path} with an empty \verb{templates/} directory
-inside it, ready for \code{\link[=lq_add]{lq_add()}} — or, with \code{from_dir}/\code{from_repo}, adopts
-an existing store instead of starting empty.
+Creates a \verb{.lengua/} directory at \code{path} holding its first \emph{source} — an
+empty git repository with a \verb{templates/} directory inside it, ready for
+\code{\link[=lq_add]{lq_add()}} — or, with \code{from_dir}/\code{from_repo}, adopts an existing store as
+that first source instead of starting empty. A library can later pool
+more than one source together; see \code{\link[=lq_fetch]{lq_fetch()}}/\code{\link[=lq_update]{lq_update()}}.
 }
 \details{
 \code{from_dir} (and \code{from_repo} when it names a local path rather than a
