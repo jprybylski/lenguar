@@ -5,7 +5,7 @@ Authors@R:
     person("John", "Prybylski", , "jprybylski@gmail.com", role = c("aut", "cre"))
 Description: R bindings (via extendr) to lengua, a git-backed library for
     templated text and snippets with Jinja-style rendering and YAML
-    frontmatter tagging.
+    frontmatter fields.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

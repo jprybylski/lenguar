@@ -6,7 +6,7 @@
 
 **lenguar** is an R package (via [extendr](https://extendr.github.io/)) for
 [lengua](https://github.com/jprybylski/lengua), a git-backed library for templated text and
-snippets: Jinja-style `{{ variable }}` rendering, YAML frontmatter tagging, and full history for
+snippets: Jinja-style `{{ variable }}` rendering, YAML frontmatter fields, and full history for
 free since every change is a real git commit.
 
 lenguar links against `lengua-core` directly through Rust FFI — it does not shell out to the
