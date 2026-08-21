@@ -132,12 +132,12 @@ fn rs_update(path: &str, source: Nullable<String>) -> extendr_api::Result<Robj> 
                     &to[..to.len().min(12)]
                 )));
             }
-            Err(err @ lengua_core::Error::NotFastForward { .. }) => {
-                statuses.push("error".to_string());
+            Err(err @ lengua_core::Error::SourceNotUpdatable { .. }) => {
+                statuses.push("not-updatable".to_string());
                 details.push(Some(err.to_string()));
             }
             Err(err) => {
-                statuses.push("not-updatable".to_string());
+                statuses.push("error".to_string());
                 details.push(Some(err.to_string()));
             }
         }
