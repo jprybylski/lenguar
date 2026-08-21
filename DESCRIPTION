@@ -1,0 +1,27 @@
+Package: lenguar
+Title: Templated Text Library Bindings for lengua
+Version: 0.0.0.9000
+Authors@R: 
+    person("Justin", "Prybylski", , "jprybylski@gmail.com", role = c("aut", "cre"))
+Description: R bindings (via extendr) to lengua, a git-backed library for
+    templated text and snippets with Jinja-style rendering and YAML
+    frontmatter tagging.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Config/rextendr/version: 0.5.0
+SystemRequirements: Cargo (Rust's package manager), rustc >= 1.65.0, xz
+Depends:
+    R (>= 4.2)
+Imports:
+    cli
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    withr
+Config/roxygen2/version: 8.1.0
+Config/testthat/edition: 3
+URL: https://github.com/jprybylski/lenguar, https://jprybylski.github.io/lenguar/
+BugReports: https://github.com/jprybylski/lenguar/issues
+VignetteBuilder: knitr

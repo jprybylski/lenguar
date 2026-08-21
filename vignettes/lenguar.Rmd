@@ -1,0 +1,117 @@
+---
+title: "Getting started with lenguar"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with lenguar}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(lenguar)
+```
+
+lenguar wraps [lengua](https://github.com/jprybylski/lengua) — a git-backed library for
+templated text and snippets — via Rust FFI (extendr), so every function here runs the same
+`lengua-core` engine as the standalone `lengua` CLI, just without a subprocess in between.
+
+## A store is a git repo
+
+Every lenguar function takes a `path` to a *store*: a directory containing a `templates/`
+folder and its own `.git` history. Create one with `lq_init()`:
+
+```{r}
+store <- withr::local_tempdir()
+lq_init(store)
+```
+
+## Adding templates
+
+`lq_add()` writes a template body plus optional frontmatter (`title`, and any other
+`fields`) and commits the change:
+
+```{r}
+lq_add(
+  store, "letters/thank-you.md",
+  "Dear {{ name }},\n\nThank you for {{ reason }}.",
+  title = "Thank You",
+  fields = c(tone = "formal")
+)
+```
+
+Calling `lq_add()` again for the same `name` records a new version — lenguar doesn't have a
+separate versioning mechanism, it's just git commits (see [History](#history) below).
+
+## Rendering
+
+`lq_get()` substitutes `{{ variable }}` placeholders
+([minijinja](https://github.com/mitsuhiko/minijinja)/Jinja2 syntax) using the named character
+vector passed as `vars`:
+
+```{r}
+lq_get(store, "letters/thank-you.md", vars = c(name = "Ada", reason = "your thoughtful review"))
+```
+
+Pass `raw = TRUE` to get the unrendered body back instead (useful for round-tripping a template
+into another store, or into an editor).
+
+## Listing and searching
+
+`lq_list()` returns every template as a data frame; `lq_search()` filters by frontmatter field
+(every `fields` pair must match — an AND, not an OR):
+
+```{r}
+lq_add(store, "letters/casual-note.md", "Hey {{ name }}!", fields = c(tone = "casual"))
+
+lq_list(store)
+
+lq_search(store, c(tone = "formal"))
+```
+
+Both return a `lenguar_templates` data frame, so anything that works on a data frame (subsetting,
+`dplyr::filter()`, ...) works here too.
+
+## History {#history}
+
+Because every `lq_add()` is a git commit, `lq_log()` and `lq_diff()` give you real history for
+free:
+
+```{r}
+lq_add(store, "letters/thank-you.md",
+  "Dear {{ name }},\n\nThank you so much for {{ reason }}.",
+  title = "Thank You", fields = c(tone = "formal")
+)
+
+lq_log(store, "letters/thank-you.md")
+
+lq_diff(store, "letters/thank-you.md")
+```
+
+## Error handling
+
+Every lenguar function that talks to the underlying store raises a classed condition on
+failure — `lenguar_store_error` for problems from lengua-core (a missing template, an invalid
+revision, ...) and `lenguar_input_error` for bad arguments caught on the R side (an unnamed
+`fields`/`vars` vector, an empty `search()` filter). Both inherit from `lenguar_error`, so you
+can catch either specifically or both at once:
+
+```{r, error = TRUE}
+tryCatch(
+  lq_get(store, "does-not-exist.md"),
+  lenguar_store_error = function(e) cat("store error:", conditionMessage(e), "\n")
+)
+```
+
+## Where to next
+
+See `?lq_add`, `?lq_get`, `?lq_list`, `?lq_search`, `?lq_log`, and `?lq_diff` for full
+per-function reference, and [lengua's own
+docs](https://jprybylski.github.io/lengua/) for the template syntax, frontmatter model, and
+storage design that lenguar is a thin FFI layer over.

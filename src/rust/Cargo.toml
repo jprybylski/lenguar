@@ -1,0 +1,23 @@
+[package]
+name = 'lenguar'
+publish = false
+version = '0.1.0'
+edition = '2021'
+rust-version = '1.65'
+
+[lib]
+crate-type = [ 'rlib', 'staticlib' ]
+name = 'lenguar'
+
+[[bin]]
+name = 'document'
+path = 'document.rs'
+
+[dependencies]
+extendr-api = '*'
+lengua-core = { path = 'lengua/crates/lengua-core' }
+serde_yaml = '0.9'
+
+[profile.release]
+lto = true
+codegen-units = 1

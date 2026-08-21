@@ -1,0 +1,3 @@
+[submodule "src/rust/lengua"]
+	path = src/rust/lengua
+	url = https://github.com/jprybylski/lengua.git

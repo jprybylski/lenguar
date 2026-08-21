@@ -1,0 +1,27 @@
+^src/\.cargo$
+^src/rust/vendor$
+^src/rust/target$
+^src/Makevars$
+^src/Makevars\.win$
+^LICENSE\.md$
+
+# The lengua submodule brings its own repo/CI/doc scaffolding along, none of
+# which belongs in an R source package - only its `crates/` are needed to
+# compile the extendr bindings.
+^src/rust/lengua/\.git$
+^src/rust/lengua/\.claude$
+^src/rust/lengua/\.github$
+^src/rust/lengua/docs$
+^src/rust/lengua/fixtures$
+^src/rust/lengua/target$
+^src/rust/lengua/\.gitignore$
+^src/rust/lengua/README\.md$
+^src/rust/lengua/CHANGELOG\.md$
+^src/rust/lengua/LICENSE$
+^src/rust/lengua/VERSION$
+^src/rust/lengua/justfile$
+^src/rust/lengua/Templated Language Library CLI Tools Research\.md$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
