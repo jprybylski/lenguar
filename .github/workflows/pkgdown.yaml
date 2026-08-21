@@ -1,31 +1,38 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# Deploys via GitHub's OIDC-based Pages flow (upload-pages-artifact +
+# deploy-pages), not the git-branch-push approach usethis's template
+# defaults to. That push approach needs `contents: write` on the default
+# GITHUB_TOKEN, which this repo's (org-wide) "read" default workflow
+# permissions setting caps regardless of what this file's `permissions:`
+# block requests - confirmed by a failed deploy ("Write access to
+# repository not granted") even with contents: write declared here.
+# The OIDC flow sidesteps that entirely: it only needs pages: write and
+# id-token: write, which do work under the same read default (this mirrors
+# the working setup in jprybylski/lengua's own pages.yml).
 on:
   push:
     branches: [main, master]
-  pull_request:
   release:
     types: [published]
   workflow_dispatch:
 
 name: pkgdown.yaml
 
-permissions: read-all
+permissions:
+  contents: read
+
+concurrency:
+  group: pkgdown
+  cancel-in-progress: false
 
 jobs:
-  pkgdown:
+  build:
     runs-on: ubuntu-latest
-    # Only restrict concurrency for non-PR jobs
-    concurrency:
-      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      contents: write
     steps:
-      # See the comment on the same step in R-CMD-check.yaml: jprybylski/lengua
-      # is a private repo, so cloning it as a submodule needs the LENGUA_PAT
-      # secret (a fine-grained PAT with read-only Contents access to that repo).
+      # jprybylski/lengua is a private repo, so cloning it as a submodule
+      # needs the LENGUA_PAT secret (a fine-grained PAT with read-only
+      # Contents access to that repo).
       - uses: actions/checkout@v6
         with:
           submodules: true
@@ -46,17 +53,22 @@ jobs:
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
-      - name: Deploy to GitHub pages 🚀
-        if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
         with:
-          clean: false
-          branch: gh-pages
-          folder: docs
-          # actions/checkout's `token:` (LENGUA_PAT, above) persists as this
-          # job's git credentials for every subsequent github.com request -
-          # including this push. LENGUA_PAT only grants read access to
-          # jprybylski/lengua, not write access to this repo, so it must be
-          # overridden here with the default token (which has contents:write
-          # on THIS repo via the job's `permissions:` block).
-          token: ${{ github.token }}
+          path: docs
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
