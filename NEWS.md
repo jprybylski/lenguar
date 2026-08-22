@@ -1,5 +1,16 @@
 # lenguar
 
+# lenguar (development version)
+
+## Documentation
+
+* Link `lq_add()`'s roxygen docs, `vignette("lenguar")`, and the README to
+  lengua-core's new rustdoc templating guide for the full minijinja syntax
+  (filters, conditionals, loops, arithmetic, escaping). Closes lengua#2.
+* Reworded "YAML frontmatter tagging" (which conflated frontmatter fields
+  with lengua's separate, unrelated tag/revision feature) to "YAML
+  frontmatter fields" in the README.
+
 # lenguar 0.2.0
 
 ## Breaking changes

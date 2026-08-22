@@ -222,3 +222,28 @@ test_that("update fast-forwards a fetched source and reports local as not-updata
 
   expect_equal(lq_get(store, "b.md", source = "other"), "v2")
 })
+
+test_that("export_skills writes SKILL.md files and refuses to overwrite without force", {
+  dir <- withr::local_tempdir()
+  result <- lq_export_skills(dir)
+  expect_s3_class(result, "lenguar_skills_result")
+  expect_equal(result$directory, dir)
+  expect_true(length(result$created) > 0)
+  for (path in result$created) {
+    expect_true(file.exists(path))
+    expect_match(basename(path), "^SKILL\\.md$")
+  }
+
+  expect_error(lq_export_skills(dir), class = "lenguar_store_error")
+
+  # force overwrites cleanly
+  forced <- lq_export_skills(dir, force = TRUE)
+  expect_equal(forced$created, result$created)
+})
+
+test_that("export_skills defaults to the current directory", {
+  dir <- withr::local_tempdir()
+  withr::local_dir(dir)
+  result <- lq_export_skills()
+  expect_equal(result$directory, ".")
+})

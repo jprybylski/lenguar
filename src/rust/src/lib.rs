@@ -1,7 +1,10 @@
 use std::collections::BTreeMap;
+use std::path::Path;
 
 use extendr_api::prelude::*;
-use lengua_core::{DiffTag, Library, Query, TemplateMeta, UpdateStatus, diff_text, template};
+use lengua_core::{
+    DiffTag, Library, Query, TemplateMeta, UpdateStatus, diff_text, export_skills, template,
+};
 use serde_yaml::Value as YamlValue;
 
 /// Reads a named R character vector (or NULL) into `(key, value)` pairs.
@@ -356,6 +359,20 @@ fn rs_tag_rm(path: &str, source: Nullable<String>, name: &str, tag: &str) -> ext
     Ok(())
 }
 
+/// Export lengua's bundled coding-agent skill files (`SKILL.md`) into
+/// `directory`. Doesn't touch a library — no `path`/`source` involved.
+/// Returns a `directory`/`created` list.
+/// @noRd
+#[extendr]
+fn rs_export_skills(directory: &str, force: bool) -> extendr_api::Result<Robj> {
+    let created = export_skills(Path::new(directory), force).map_err(|e| e.to_string())?;
+    let created: Vec<Rstr> = created
+        .into_iter()
+        .map(|p| Rstr::from(p.to_string_lossy().into_owned()))
+        .collect();
+    Ok(list!(directory = directory, created = created).into())
+}
+
 extendr_module! {
     mod lenguar;
     fn rs_init;
@@ -370,4 +387,5 @@ extendr_module! {
     fn rs_tag;
     fn rs_tag_list;
     fn rs_tag_rm;
+    fn rs_export_skills;
 }

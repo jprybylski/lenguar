@@ -6,7 +6,7 @@
 
 **lenguar** is an R package (via [extendr](https://extendr.github.io/)) for
 [lengua](https://github.com/jprybylski/lengua), a git-backed library for templated text and
-snippets: Jinja-style `{{ variable }}` rendering, YAML frontmatter tagging, and full history for
+snippets: Jinja-style `{{ variable }}` rendering, YAML frontmatter fields, and full history for
 free since every change is a real git commit.
 
 lenguar links against `lengua-core` directly through Rust FFI — it does not shell out to the
@@ -60,10 +60,12 @@ lq_log(store, "letters/thank-you.md")
 ```
 
 See `vignette("lenguar")` (or the [pkgdown site](https://jprybylski.github.io/lenguar/)) for a
-fuller walkthrough, and [lengua's own docs](https://jprybylski.github.io/lengua/) for the
-underlying storage model and template syntax — lenguar is a thin FFI layer, not a
-reimplementation, so anything documented there about how templates are stored, tagged, and
-versioned applies here unchanged.
+fuller walkthrough, [lengua's own docs](https://jprybylski.github.io/lengua/) for the underlying
+storage model, and
+[lengua-core's templating guide](https://docs.rs/lengua-core/latest/lengua_core/template/) for
+the full `{{ variable }}` syntax (filters, conditionals, loops, arithmetic, escaping) — lenguar
+is a thin FFI layer, not a reimplementation, so anything documented there about how templates
+are stored, tagged, versioned, and rendered applies here unchanged.
 
 ## Relationship to lengua
 

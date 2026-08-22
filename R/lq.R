@@ -245,7 +245,9 @@ lq_update <- function(path, source = NULL) {
 #' @param name Relative path/id under the source's `templates/` dir, e.g.
 #'   `"letters/thank-you.md"`.
 #' @param body The template body, using `{{ variable }}` interpolation
-#'   ([minijinja](https://github.com/mitsuhiko/minijinja) / Jinja2 syntax).
+#'   ([minijinja](https://github.com/mitsuhiko/minijinja) / Jinja2 syntax). See
+#'   lengua-core's [templating guide](https://docs.rs/lengua-core/latest/lengua_core/template/)
+#'   for the full supported syntax (filters, conditionals, loops, escaping).
 #' @param title Optional frontmatter title.
 #' @param fields Optional named character vector of additional frontmatter
 #'   fields, e.g. `c(tone = "formal")`.
