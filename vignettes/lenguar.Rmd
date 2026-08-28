@@ -193,6 +193,100 @@ A library built entirely from `lq_fetch()`ed sources, with no `local` source of 
 completely normal way to use lenguar — consuming shared templates never requires calling
 `lq_init()`/`lq_add()` without adoption arguments at all.
 
+## Advanced End-User workflows in R
+
+### 3-tier multi-source layering
+
+You can layer corporate, department, and project templates in a single R session:
+
+```{r}
+# 1. Base corporate standards
+corp <- withr::local_tempdir()
+lq_init(corp)
+lq_add(corp, "welcome.md", "Welcome to Acme Corp, {{ name }}!", fields = c(tier = "corp"))
+lq_add(corp, "legal/nda.md", "Mutual NDA for {{ recipient }}.", fields = c(tier = "corp"))
+
+# 2. Department sales templates (overrides welcome.md)
+sales <- withr::local_tempdir()
+lq_init(sales)
+lq_add(sales, "welcome.md", "Welcome to the Sales Team, {{ name }}!", fields = c(tier = "sales"))
+lq_add(sales, "sales/pitch.md", "Proposal for {{ product }}.", fields = c(tier = "sales"))
+
+# 3. Project-specific library
+workspace <- withr::local_tempdir()
+lq_init(workspace, from_dir = corp, name = "corp")
+lq_fetch(workspace, from_dir = sales, name = "sales")
+
+# Unscoped resolution gets the winning sales version:
+lq_get(workspace, "welcome.md", vars = c(name = "Ada"))
+
+# Explicit source access retrieves the underlying corporate copy:
+lq_get(workspace, "welcome.md", vars = c(name = "Ada"), source = "corp")
+```
+
+### Parameterized document & report generation
+
+Use `lq_get()` in R vector pipelines or `purrr`/`apply` workflows:
+
+```{r}
+recipients <- data.frame(
+  name = c("Alice", "Bob", "Charlie"),
+  product = c("Widget Pro", "Analytics Suite", "Cloud Storage"),
+  stringsAsFactors = FALSE
+)
+
+pitches <- vapply(seq_len(nrow(recipients)), function(i) {
+  row <- recipients[i, ]
+  lq_get(workspace, "sales/pitch.md", vars = c(name = row$name, product = row$product))
+}, character(1))
+
+head(pitches, 2)
+```
+
+## Advanced Storekeeper workflows in R
+
+Storekeepers can manage organization stores and automate quality assurance directly in R.
+
+### Release tagging and version diffs
+
+```{r}
+# Release v1.0.0
+lq_add(corp, "reports/annual.md", "Annual report v1.0 outline.", message = "v1.0.0")
+lq_tag(corp, "reports/annual.md", "v1.0.0")
+
+# Release v2.0.0
+lq_add(corp, "reports/annual.md", "Annual report v2.0 with updated KPIs.", message = "v2.0.0")
+lq_tag(corp, "reports/annual.md", "v2.0.0")
+
+# Inspect differences across releases
+lq_diff(corp, "reports/annual.md", from = "v1.0.0", to = "v2.0.0")
+```
+
+### Automated CI/CD validation pattern
+
+Storekeepers can write `testthat` tests to ensure all templates in a store meet schema requirements and render cleanly:
+
+```{r}
+validate_store <- function(store_path, mock_vars = c(name = "Test", product = "Demo", recipient = "Partner")) {
+  templates <- lq_list(store_path)
+  for (i in seq_len(nrow(templates))) {
+    name <- templates$name[i]
+    title <- templates$title[i]
+    
+    stopifnot("Missing title" = nzchar(title))
+    raw <- lq_get(store_path, name, raw = TRUE)
+    stopifnot("Empty template" = nzchar(raw))
+    
+    # Dry-run render test
+    rendered <- lq_get(store_path, name, vars = mock_vars)
+    stopifnot("Render failed" = nzchar(rendered))
+  }
+  TRUE
+}
+
+validate_store(workspace)
+```
+
 ## Error handling
 
 Every lenguar function that talks to the underlying store raises a classed condition on
