@@ -1,6 +1,6 @@
 # lenguar
 
-# lenguar (development version)
+# lenguar 0.2.0
 
 ## Documentation
 
@@ -10,8 +10,6 @@
 * Reworded "YAML frontmatter tagging" (which conflated frontmatter fields
   with lengua's separate, unrelated tag/revision feature) to "YAML
   frontmatter fields" in the README.
-
-# lenguar 0.2.0
 
 ## Breaking changes
 
